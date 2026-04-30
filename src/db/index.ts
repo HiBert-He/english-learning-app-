@@ -1,4 +1,4 @@
-import { openDB, IDBPDatabase } from 'idb';
+import { openDB, type IDBPDatabase } from 'idb';
 import type { WrongQuestion, Word } from '../types';
 
 const DB_NAME = 'english-learning';
