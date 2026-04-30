@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { initDB } from './db';
 import BottomNav from './components/BottomNav';
 import WrongQuestionsPage from './pages/WrongQuestionsPage';
@@ -36,7 +36,7 @@ export default function App() {
   }
 
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
         <Route path="/" element={<Navigate to="/wrong-questions" replace />} />
         <Route path="/wrong-questions" element={<><WrongQuestionsPage /><BottomNav /></>} />
@@ -46,6 +46,6 @@ export default function App() {
         <Route path="/vocabulary/add" element={<AddWordPage />} />
         <Route path="/vocabulary/review" element={<ReviewPage />} />
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
