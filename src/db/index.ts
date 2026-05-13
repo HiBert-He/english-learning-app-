@@ -1,47 +1,100 @@
-import { openDB, type IDBPDatabase } from 'idb';
-import type { WrongQuestion, Word } from '../types';
+import { supabase } from '../lib/supabase'
+import type { WrongQuestion, Word } from '../types'
 
-const DB_NAME = 'english-learning';
-const DB_VERSION = 1;
-
-let db: IDBPDatabase;
-
-export async function initDB() {
-  db = await openDB(DB_NAME, DB_VERSION, {
-    upgrade(database) {
-      database.createObjectStore('wrongQuestions', { keyPath: 'id' });
-      database.createObjectStore('vocabulary', { keyPath: 'id' });
-    },
-  });
+// ── Wrong Questions ────────────────────────────────────────────
+export async function getAllWrongQuestions(userId: string): Promise<WrongQuestion[]> {
+  const { data, error } = await supabase
+    .from('wrong_questions')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return data ?? []
 }
 
-function getDB() {
-  if (!db) throw new Error('DB not initialized');
-  return db;
+export async function addWrongQuestion(q: Omit<WrongQuestion, 'id' | 'created_at' | 'updated_at'>): Promise<WrongQuestion> {
+  const { data, error } = await supabase
+    .from('wrong_questions')
+    .insert(q)
+    .select()
+    .single()
+  if (error) throw error
+  return data
 }
 
-// Wrong Questions
-export const getAllWrongQuestions = (): Promise<WrongQuestion[]> =>
-  getDB().getAll('wrongQuestions');
+export async function updateWrongQuestion(q: WrongQuestion): Promise<void> {
+  const { error } = await supabase
+    .from('wrong_questions')
+    .update({
+      question_text: q.question_text,
+      question_images: q.question_images,
+      correct_answer: q.correct_answer,
+      correct_answer_images: q.correct_answer_images,
+      my_answer: q.my_answer,
+      reason: q.reason,
+      knowledge_points: q.knowledge_points,
+      corrected: q.corrected,
+    })
+    .eq('id', q.id)
+  if (error) throw error
+}
 
-export const addWrongQuestion = (q: WrongQuestion): Promise<string> =>
-  getDB().add('wrongQuestions', q) as Promise<string>;
+export async function deleteWrongQuestion(id: string): Promise<void> {
+  const { error } = await supabase.from('wrong_questions').delete().eq('id', id)
+  if (error) throw error
+}
 
-export const updateWrongQuestion = (q: WrongQuestion): Promise<string> =>
-  getDB().put('wrongQuestions', q) as Promise<string>;
+// ── Vocabulary ────────────────────────────────────────────────
+export async function getAllWords(userId: string): Promise<Word[]> {
+  const { data, error } = await supabase
+    .from('vocabulary')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return data ?? []
+}
 
-export const deleteWrongQuestion = (id: string): Promise<void> =>
-  getDB().delete('wrongQuestions', id);
+export async function addWord(word: Omit<Word, 'id' | 'created_at'>): Promise<Word> {
+  const { data, error } = await supabase.from('vocabulary').insert(word).select().single()
+  if (error) throw error
+  return data
+}
 
-// Vocabulary
-export const getAllWords = (): Promise<Word[]> =>
-  getDB().getAll('vocabulary');
+export async function updateWord(word: Word): Promise<void> {
+  const { error } = await supabase
+    .from('vocabulary')
+    .update({
+      english: word.english,
+      chinese: word.chinese,
+      example: word.example,
+      mastered: word.mastered,
+      last_reviewed_at: word.last_reviewed_at,
+    })
+    .eq('id', word.id)
+  if (error) throw error
+}
 
-export const addWord = (word: Word): Promise<string> =>
-  getDB().add('vocabulary', word) as Promise<string>;
+export async function deleteWord(id: string): Promise<void> {
+  const { error } = await supabase.from('vocabulary').delete().eq('id', id)
+  if (error) throw error
+}
 
-export const updateWord = (word: Word): Promise<string> =>
-  getDB().put('vocabulary', word) as Promise<string>;
+// ── Teacher: read student questions ──────────────────────────
+export async function getStudentWrongQuestions(studentId: string): Promise<WrongQuestion[]> {
+  const { data, error } = await supabase
+    .from('wrong_questions')
+    .select('*')
+    .eq('user_id', studentId)
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return data ?? []
+}
 
-export const deleteWord = (id: string): Promise<void> =>
-  getDB().delete('vocabulary', id);
+export async function setTeacherComment(questionId: string, comment: string): Promise<void> {
+  const { error } = await supabase.rpc('set_teacher_comment', {
+    p_question_id: questionId,
+    p_comment: comment,
+  })
+  if (error) throw error
+}

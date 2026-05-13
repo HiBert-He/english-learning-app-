@@ -1,49 +1,47 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react'
 import {
   getAllWrongQuestions,
   addWrongQuestion,
   updateWrongQuestion,
   deleteWrongQuestion,
-} from '../db';
-import type { WrongQuestion } from '../types';
+} from '../db'
+import type { WrongQuestion } from '../types'
 
-export function useWrongQuestions() {
-  const [questions, setQuestions] = useState<WrongQuestion[]>([]);
-  const [loading, setLoading] = useState(true);
+export function useWrongQuestions(userId: string) {
+  const [questions, setQuestions] = useState<WrongQuestion[]>([])
+  const [loading, setLoading] = useState(true)
 
   const load = useCallback(async () => {
-    setLoading(true);
-    const all = await getAllWrongQuestions();
-    all.sort((a, b) => b.createdAt - a.createdAt);
-    setQuestions(all);
-    setLoading(false);
-  }, []);
+    setLoading(true)
+    const all = await getAllWrongQuestions(userId)
+    setQuestions(all)
+    setLoading(false)
+  }, [userId])
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { load() }, [load])
 
-  const add = useCallback(async (q: Omit<WrongQuestion, 'id' | 'createdAt' | 'updatedAt' | 'corrected'>) => {
-    const now = Date.now();
-    const newQ: WrongQuestion = {
+  const add = useCallback(async (q: Omit<WrongQuestion, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'corrected' | 'teacher_comment' | 'teacher_id' | 'teacher_commented_at'>) => {
+    await addWrongQuestion({
       ...q,
-      id: crypto.randomUUID(),
+      user_id: userId,
       corrected: false,
-      createdAt: now,
-      updatedAt: now,
-    };
-    await addWrongQuestion(newQ);
-    await load();
-    return newQ.id;
-  }, [load]);
+      correct_answer_images: q.correct_answer_images ?? [],
+      teacher_comment: null,
+      teacher_id: null,
+      teacher_commented_at: null,
+    })
+    await load()
+  }, [userId, load])
 
   const update = useCallback(async (q: WrongQuestion) => {
-    await updateWrongQuestion({ ...q, updatedAt: Date.now() });
-    await load();
-  }, [load]);
+    await updateWrongQuestion(q)
+    await load()
+  }, [load])
 
   const remove = useCallback(async (id: string) => {
-    await deleteWrongQuestion(id);
-    await load();
-  }, [load]);
+    await deleteWrongQuestion(id)
+    await load()
+  }, [load])
 
-  return { questions, loading, add, update, remove, reload: load };
+  return { questions, loading, add, update, remove, reload: load }
 }
