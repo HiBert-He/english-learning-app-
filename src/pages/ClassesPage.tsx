@@ -45,21 +45,11 @@ export default function ClassesPage() {
     e.preventDefault()
     setJoinError('')
     setJoining(true)
-    const { data: cls } = await supabase
-      .from('classes')
-      .select('*')
-      .eq('invite_code', joinCode.trim().toUpperCase())
-      .single()
-    if (!cls) {
+    const { data, error } = await supabase.rpc('join_class_by_code', {
+      p_invite_code: joinCode.trim(),
+    })
+    if (error || data?.error === 'not_found') {
       setJoinError('班级码不正确，请检查后重试')
-      setJoining(false)
-      return
-    }
-    const { error } = await supabase
-      .from('enrollments')
-      .insert({ class_id: cls.id, student_id: profile!.id })
-    if (error && error.code !== '23505') {
-      setJoinError('加入失败，请重试')
     } else {
       setJoinCode('')
       setShowJoinInput(false)
