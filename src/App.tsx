@@ -13,6 +13,7 @@ import ClassesPage from './pages/ClassesPage'
 import CreateClassPage from './pages/CreateClassPage'
 import ClassDetailPage from './pages/ClassDetailPage'
 import StudentQuestionsPage from './pages/StudentQuestionsPage'
+import StudentQuestionDetailPage from './pages/StudentQuestionDetailPage'
 import SettingsPage from './pages/SettingsPage'
 
 function AppRoutes() {
@@ -44,6 +45,7 @@ function AppRoutes() {
       <Route path="/classes/create" element={<CreateClassPage />} />
       <Route path="/classes/:id" element={<ClassDetailPage />} />
       <Route path="/classes/:id/students/:studentId" element={<StudentQuestionsPage />} />
+      <Route path="/classes/:id/students/:studentId/questions/:questionId" element={<StudentQuestionDetailPage />} />
       <Route path="/settings" element={withNav(<SettingsPage />)} />
       <Route path="*" element={<Navigate to="/wrong-questions" replace />} />
     </Routes>

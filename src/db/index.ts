@@ -89,6 +89,14 @@ export async function getStudentWrongQuestions(studentId: string): Promise<Wrong
   return list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 }
 
+export async function getStudentQuestion(studentId: string, questionId: string): Promise<WrongQuestion | null> {
+  const { data, error } = await supabase
+    .rpc('get_student_questions_for_teacher', { p_student_id: studentId })
+  if (error) throw error
+  const list = (data ?? []) as WrongQuestion[]
+  return list.find((q) => q.id === questionId) ?? null
+}
+
 export async function setTeacherComment(questionId: string, comment: string, answerImages: string[] = []): Promise<void> {
   const { error } = await supabase.rpc('set_teacher_comment', {
     p_question_id: questionId,

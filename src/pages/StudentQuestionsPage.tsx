@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { getStudentWrongQuestions, setTeacherComment } from '../db'
 import ImageUploader from '../components/ImageUploader'
 import type { Profile, WrongQuestion } from '../types'
 
 export default function StudentQuestionsPage() {
-  const { studentId } = useParams<{ id: string; studentId: string }>()
+  const { id: classId, studentId } = useParams<{ id: string; studentId: string }>()
   const navigate = useNavigate()
   const [student, setStudent] = useState<Profile | null>(null)
   const [questions, setQuestions] = useState<WrongQuestion[]>([])
@@ -171,6 +171,14 @@ export default function StudentQuestionsPage() {
                   )}
                 </div>
               )}
+
+              {/* Detail link */}
+              <Link
+                to={`/classes/${classId}/students/${studentId}/questions/${q.id}`}
+                className="block text-center text-xs text-blue-500 font-medium py-1"
+              >
+                查看详情 →
+              </Link>
 
               {/* Comment editor */}
               {activeComment === q.id ? (
