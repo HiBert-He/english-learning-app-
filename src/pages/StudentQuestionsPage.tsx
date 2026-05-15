@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { getStudentWrongQuestions, setTeacherComment } from '../db'
+import ImageUploader from '../components/ImageUploader'
 import type { Profile, WrongQuestion } from '../types'
 
 export default function StudentQuestionsPage() {
@@ -13,6 +14,7 @@ export default function StudentQuestionsPage() {
   const [filter, setFilter] = useState<'all' | 'uncorrected' | 'corrected'>('all')
   const [activeComment, setActiveComment] = useState<string | null>(null)
   const [commentText, setCommentText] = useState('')
+  const [answerImages, setAnswerImages] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
@@ -36,15 +38,16 @@ export default function StudentQuestionsPage() {
   const openComment = (q: WrongQuestion) => {
     setActiveComment(q.id)
     setCommentText(q.teacher_comment ?? '')
+    setAnswerImages(q.teacher_answer_images ?? [])
   }
 
   const saveComment = async (questionId: string) => {
     setSaving(true)
-    await setTeacherComment(questionId, commentText.trim())
+    await setTeacherComment(questionId, commentText.trim(), answerImages)
     setQuestions((prev) =>
       prev.map((q) =>
         q.id === questionId
-          ? { ...q, teacher_comment: commentText.trim(), teacher_commented_at: new Date().toISOString() }
+          ? { ...q, teacher_comment: commentText.trim(), teacher_answer_images: answerImages, teacher_commented_at: new Date().toISOString() }
           : q
       )
     )
@@ -152,23 +155,35 @@ export default function StudentQuestionsPage() {
                 </div>
               )}
 
-              {/* Teacher comment display */}
-              {q.teacher_comment && activeComment !== q.id && (
-                <div className="bg-purple-50 rounded-xl p-3">
-                  <p className="text-xs font-bold text-purple-600 mb-1">我的批注</p>
-                  <p className="text-sm text-purple-800 whitespace-pre-wrap">{q.teacher_comment}</p>
+              {/* Teacher annotation display */}
+              {(q.teacher_comment || q.teacher_answer_images?.length > 0) && activeComment !== q.id && (
+                <div className="bg-purple-50 rounded-xl p-3 space-y-2">
+                  <p className="text-xs font-bold text-purple-600">教师批注</p>
+                  {q.teacher_answer_images?.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {q.teacher_answer_images.map((src, i) => (
+                        <img key={i} src={src} alt="" className="max-h-48 rounded-lg border border-purple-200 object-contain" />
+                      ))}
+                    </div>
+                  )}
+                  {q.teacher_comment && (
+                    <p className="text-sm text-purple-800 whitespace-pre-wrap">{q.teacher_comment}</p>
+                  )}
                 </div>
               )}
 
               {/* Comment editor */}
               {activeComment === q.id ? (
-                <div className="space-y-2">
+                <div className="space-y-3">
+                  <div className="space-y-1.5">
+                    <p className="text-xs font-semibold text-gray-500">上传正确答案图片</p>
+                    <ImageUploader images={answerImages} onChange={setAnswerImages} />
+                  </div>
                   <textarea
                     value={commentText}
                     onChange={(e) => setCommentText(e.target.value)}
-                    placeholder="输入批注内容…"
+                    placeholder="输入文字批注（可选）…"
                     rows={3}
-                    autoFocus
                     className="w-full border border-purple-300 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-purple-400 resize-none"
                   />
                   <div className="flex gap-2">
@@ -183,7 +198,7 @@ export default function StudentQuestionsPage() {
               ) : (
                 <button onClick={() => openComment(q)}
                   className="w-full border border-dashed border-purple-300 text-purple-600 py-2 rounded-xl text-sm font-medium">
-                  {q.teacher_comment ? '修改批注' : '+ 添加批注'}
+                  {(q.teacher_comment || q.teacher_answer_images?.length > 0) ? '修改批注' : '+ 添加批注 / 上传答案'}
                 </button>
               )}
             </div>

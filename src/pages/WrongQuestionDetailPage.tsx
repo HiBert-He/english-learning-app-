@@ -191,12 +191,21 @@ export default function WrongQuestionDetailPage() {
               </Section>
             )}
 
-            {question.teacher_comment && (
+            {(question.teacher_comment || question.teacher_answer_images?.length > 0) && (
               <Section title="教师批注">
-                <div className="bg-purple-50 rounded-xl p-3">
-                  <p className="text-purple-800 text-sm whitespace-pre-wrap">{question.teacher_comment}</p>
+                <div className="bg-purple-50 rounded-xl p-3 space-y-2">
+                  {question.teacher_answer_images?.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {question.teacher_answer_images.map((src, i) => (
+                        <img key={i} src={src} alt="" className="max-w-full rounded-lg border border-purple-200" />
+                      ))}
+                    </div>
+                  )}
+                  {question.teacher_comment && (
+                    <p className="text-purple-800 text-sm whitespace-pre-wrap">{question.teacher_comment}</p>
+                  )}
                   {question.teacher_commented_at && (
-                    <p className="text-xs text-purple-400 mt-1.5">
+                    <p className="text-xs text-purple-400">
                       {new Date(question.teacher_commented_at).toLocaleString('zh-CN')}
                     </p>
                   )}

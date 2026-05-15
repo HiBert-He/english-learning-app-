@@ -91,10 +91,11 @@ export async function getStudentWrongQuestions(studentId: string): Promise<Wrong
   return data ?? []
 }
 
-export async function setTeacherComment(questionId: string, comment: string): Promise<void> {
+export async function setTeacherComment(questionId: string, comment: string, answerImages: string[] = []): Promise<void> {
   const { error } = await supabase.rpc('set_teacher_comment', {
     p_question_id: questionId,
     p_comment: comment,
+    p_answer_images: answerImages,
   })
   if (error) throw error
 }

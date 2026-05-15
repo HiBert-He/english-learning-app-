@@ -10,6 +10,7 @@ export interface WrongQuestion {
   knowledge_points: string[]
   corrected: boolean
   teacher_comment: string | null
+  teacher_answer_images: string[]
   teacher_id: string | null
   teacher_commented_at: string | null
   created_at: string
