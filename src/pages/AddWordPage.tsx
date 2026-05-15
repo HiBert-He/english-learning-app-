@@ -23,37 +23,49 @@ function parseBulkText(text: string): ParsedWord[] {
     .filter((w) => w.english && w.chinese)
 }
 
+function rowsToWords(rows: (string | number | undefined)[][]): ParsedWord[] {
+  let start = 0
+  if (rows.length > 0) {
+    const firstCell = String(rows[0][0] ?? '').toLowerCase()
+    if (HEADER_KEYWORDS.some((kw) => firstCell.includes(kw))) start = 1
+  }
+  return rows.slice(start)
+    .map((row) => ({
+      english: String(row[0] ?? '').trim(),
+      chinese: String(row[1] ?? '').trim(),
+      example: String(row[2] ?? '').trim(),
+    }))
+    .filter((w) => w.english && w.chinese)
+}
+
 function parseExcel(file: File): Promise<ParsedWord[]> {
+  const isCsv = file.name.toLowerCase().endsWith('.csv')
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
     reader.onload = (e) => {
       try {
-        const data = e.target?.result
-        const wb = XLSX.read(data, { type: 'array' })
+        const raw = e.target?.result
+        let wb: XLSX.WorkBook
+        if (isCsv) {
+          // CSV: read as UTF-8 text to preserve Chinese characters
+          wb = XLSX.read(raw as string, { type: 'string' })
+        } else {
+          // xlsx/xls: read as binary array
+          wb = XLSX.read(new Uint8Array(raw as ArrayBuffer), { type: 'array' })
+        }
         const ws = wb.Sheets[wb.SheetNames[0]]
         const rows = XLSX.utils.sheet_to_json<(string | number | undefined)[]>(ws, { header: 1 })
-
-        let start = 0
-        if (rows.length > 0) {
-          const firstCell = String(rows[0][0] ?? '').toLowerCase()
-          if (HEADER_KEYWORDS.some((kw) => firstCell.includes(kw))) start = 1
-        }
-
-        const words = rows.slice(start)
-          .map((row) => ({
-            english: String(row[0] ?? '').trim(),
-            chinese: String(row[1] ?? '').trim(),
-            example: String(row[2] ?? '').trim(),
-          }))
-          .filter((w) => w.english && w.chinese)
-
-        resolve(words)
+        resolve(rowsToWords(rows))
       } catch (err) {
         reject(err)
       }
     }
     reader.onerror = reject
-    reader.readAsArrayBuffer(file)
+    if (isCsv) {
+      reader.readAsText(file, 'utf-8')
+    } else {
+      reader.readAsArrayBuffer(file)
+    }
   })
 }
 
