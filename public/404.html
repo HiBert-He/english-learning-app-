@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8" />
+  <title>英语错题本</title>
+  <script>
+    // 把当前路径存入 sessionStorage，再跳回根路径
+    // index.html 里的脚本会读取并用 history.replaceState 还原路径
+    sessionStorage.setItem('spa-redirect', location.pathname + location.search + location.hash);
+  </script>
+  <meta http-equiv="refresh" content="0;URL=/" />
+</head>
+</html>

@@ -83,12 +83,10 @@ export async function deleteWord(id: string): Promise<void> {
 // ── Teacher: read student questions ──────────────────────────
 export async function getStudentWrongQuestions(studentId: string): Promise<WrongQuestion[]> {
   const { data, error } = await supabase
-    .from('wrong_questions')
-    .select('*')
-    .eq('user_id', studentId)
-    .order('created_at', { ascending: false })
+    .rpc('get_student_questions_for_teacher', { p_student_id: studentId })
   if (error) throw error
-  return data ?? []
+  const list = (data ?? []) as WrongQuestion[]
+  return list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 }
 
 export async function setTeacherComment(questionId: string, comment: string, answerImages: string[] = []): Promise<void> {
