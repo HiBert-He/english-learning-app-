@@ -20,13 +20,14 @@ export function useWrongQuestions(userId: string) {
 
   useEffect(() => { load() }, [load])
 
-  const add = useCallback(async (q: Omit<WrongQuestion, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'corrected' | 'teacher_comment' | 'teacher_id' | 'teacher_commented_at'>) => {
+  const add = useCallback(async (q: Omit<WrongQuestion, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'corrected' | 'teacher_comment' | 'teacher_answer_images' | 'teacher_id' | 'teacher_commented_at'>) => {
     await addWrongQuestion({
       ...q,
       user_id: userId,
       corrected: false,
       correct_answer_images: q.correct_answer_images ?? [],
       teacher_comment: null,
+      teacher_answer_images: [],
       teacher_id: null,
       teacher_commented_at: null,
     })
