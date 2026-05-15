@@ -61,6 +61,11 @@ export async function addWord(word: Omit<Word, 'id' | 'created_at'>): Promise<Wo
   return data
 }
 
+export async function addWords(words: Omit<Word, 'id' | 'created_at'>[]): Promise<void> {
+  const { error } = await supabase.from('vocabulary').insert(words)
+  if (error) throw error
+}
+
 export async function updateWord(word: Word): Promise<void> {
   const { error } = await supabase
     .from('vocabulary')

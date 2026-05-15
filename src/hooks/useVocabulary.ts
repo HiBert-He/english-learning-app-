@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { getAllWords, addWord, updateWord, deleteWord } from '../db'
+import { getAllWords, addWord, addWords, updateWord, deleteWord } from '../db'
 import type { Word } from '../types'
 
 export function useVocabulary(userId: string) {
@@ -25,6 +25,11 @@ export function useVocabulary(userId: string) {
     await load()
   }, [userId, load])
 
+  const addBulk = useCallback(async (ws: Omit<Word, 'id' | 'user_id' | 'created_at' | 'mastered' | 'last_reviewed_at'>[]) => {
+    await addWords(ws.map((w) => ({ ...w, user_id: userId, mastered: false, last_reviewed_at: null })))
+    await load()
+  }, [userId, load])
+
   const update = useCallback(async (w: Word) => {
     await updateWord(w)
     await load()
@@ -35,5 +40,5 @@ export function useVocabulary(userId: string) {
     await load()
   }, [load])
 
-  return { words, loading, add, update, remove, reload: load }
+  return { words, loading, add, addBulk, update, remove, reload: load }
 }
