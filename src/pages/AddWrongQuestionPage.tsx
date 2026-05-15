@@ -18,21 +18,28 @@ export default function AddWrongQuestionPage() {
   const [reason, setReason] = useState('')
   const [knowledgePoints, setKnowledgePoints] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!questionText.trim() && questionImages.length === 0) return
     setSaving(true)
-    await add({
-      question_text: questionText,
-      question_images: questionImages,
-      correct_answer: correctAnswer,
-      correct_answer_images: correctAnswerImages,
-      my_answer: myAnswer,
-      reason,
-      knowledge_points: knowledgePoints,
-    })
-    navigate('/wrong-questions')
+    setError('')
+    try {
+      await add({
+        question_text: questionText,
+        question_images: questionImages,
+        correct_answer: correctAnswer,
+        correct_answer_images: correctAnswerImages,
+        my_answer: myAnswer,
+        reason,
+        knowledge_points: knowledgePoints,
+      })
+      navigate('/wrong-questions')
+    } catch (err: any) {
+      setError(err?.message ?? '保存失败，请重试')
+      setSaving(false)
+    }
   }
 
   return (
@@ -80,6 +87,8 @@ export default function AddWrongQuestionPage() {
         <Field label="知识点标签">
           <TagInput tags={knowledgePoints} onChange={setKnowledgePoints} placeholder="如：时态、定语从句（回车添加）" />
         </Field>
+
+        {error && <p className="text-red-500 text-sm px-1">{error}</p>}
 
         <button type="submit"
           disabled={saving || (!questionText.trim() && questionImages.length === 0)}
