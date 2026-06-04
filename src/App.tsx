@@ -15,6 +15,8 @@ import ClassDetailPage from './pages/ClassDetailPage'
 import StudentQuestionsPage from './pages/StudentQuestionsPage'
 import StudentQuestionDetailPage from './pages/StudentQuestionDetailPage'
 import SettingsPage from './pages/SettingsPage'
+import DiagnosticPage from './pages/DiagnosticPage'
+import PracticePage from './pages/PracticePage'
 
 function AppRoutes() {
   const { user, profile, loading } = useAuth()
@@ -47,6 +49,8 @@ function AppRoutes() {
       <Route path="/classes/:id/students/:studentId" element={<StudentQuestionsPage />} />
       <Route path="/classes/:id/students/:studentId/questions/:questionId" element={<StudentQuestionDetailPage />} />
       <Route path="/settings" element={withNav(<SettingsPage />)} />
+      <Route path="/diagnostic" element={<DiagnosticPage />} />
+      <Route path="/practice" element={withNav(<PracticePage />)} />
       <Route path="*" element={<Navigate to="/wrong-questions" replace />} />
     </Routes>
   )

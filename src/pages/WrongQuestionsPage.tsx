@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useWrongQuestions } from '../hooks/useWrongQuestions'
 import { useAuth } from '../lib/auth'
 import type { WrongQuestion } from '../types'
@@ -7,6 +7,7 @@ import type { WrongQuestion } from '../types'
 type Filter = 'all' | 'uncorrected' | 'corrected'
 
 export default function WrongQuestionsPage() {
+  const navigate = useNavigate()
   const { profile } = useAuth()
   const { questions, loading } = useWrongQuestions(profile!.id)
   const [filter, setFilter] = useState<Filter>('all')
@@ -37,10 +38,23 @@ export default function WrongQuestionsPage() {
       <header className="sticky top-0 bg-white border-b border-gray-100 z-10 px-4 pt-12 pb-3">
         <div className="flex items-center justify-between mb-3">
           <h1 className="text-xl font-bold text-gray-900">错题本</h1>
-          <Link to="/wrong-questions/add"
-            className="flex items-center gap-1 bg-blue-600 text-white px-3 py-1.5 rounded-xl text-sm font-medium">
-            <span className="text-lg leading-none">+</span> 添加
-          </Link>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigate('/diagnostic')}
+              title="诊断报告"
+              className="flex items-center justify-center w-9 h-9 rounded-xl bg-gray-100 text-gray-500 active:scale-[0.95] transition-transform"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z" />
+              </svg>
+            </button>
+            <Link
+              to="/wrong-questions/add"
+              className="flex items-center gap-1 bg-blue-600 text-white px-3 py-1.5 rounded-xl text-sm font-medium"
+            >
+              <span className="text-lg leading-none">+</span> 添加
+            </Link>
+          </div>
         </div>
 
         <div className="relative mb-2">

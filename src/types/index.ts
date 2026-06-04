@@ -50,3 +50,11 @@ export interface Enrollment {
   joined_at: string
   profiles?: Profile
 }
+
+export interface PracticeQuestion {
+  question: string
+  options: string[]   // ["A. ...", "B. ...", "C. ...", "D. ..."]
+  correct: string     // "A" | "B" | "C" | "D"
+  explanation: string
+  knowledge_point?: string
+}
