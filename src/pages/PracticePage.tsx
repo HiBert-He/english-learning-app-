@@ -257,7 +257,7 @@ export default function PracticePage() {
               onClick={() => navigate('/wrong-questions')}
               className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-2xl font-semibold text-base active:scale-[0.98] transition-transform"
             >
-              回错题本
+              回笔记
             </button>
           </div>
         </div>

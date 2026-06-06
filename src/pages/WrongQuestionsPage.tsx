@@ -37,7 +37,7 @@ export default function WrongQuestionsPage() {
     <div className="pb-24">
       <header className="sticky top-0 bg-white border-b border-gray-100 z-10 px-4 pt-12 pb-3">
         <div className="flex items-center justify-between mb-3">
-          <h1 className="text-xl font-bold text-gray-900">错题本</h1>
+          <h1 className="text-xl font-bold text-gray-900">学霸笔记</h1>
           <div className="flex items-center gap-2">
             <button
               onClick={() => navigate('/diagnostic')}

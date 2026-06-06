@@ -43,8 +43,8 @@ export default function AuthPage() {
     <div className="flex flex-col justify-center min-h-screen px-6 bg-white max-w-[480px] mx-auto">
       <div className="mb-8 text-center">
         <div className="text-5xl mb-3">📖</div>
-        <h1 className="text-2xl font-bold text-gray-900">英语错题本</h1>
-        <p className="text-gray-400 text-sm mt-1">记录错题，掌握知识点</p>
+        <h1 className="text-2xl font-bold text-gray-900">学霸笔记</h1>
+        <p className="text-gray-400 text-sm mt-1">AI 错题分析，针对性练习</p>
       </div>
 
       <div className="flex bg-gray-100 rounded-2xl p-1 mb-6">
