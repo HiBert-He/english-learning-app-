@@ -9,6 +9,13 @@ async function findReadyDeployment() {
     const url = `https://api.vercel.com/v6/deployments?projectId=${projectId}&target=production&limit=10&teamId=${teamId}`;
     const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
     const data = await res.json();
+    if (!res.ok) {
+      throw new Error(`Vercel API error (${res.status}): ${JSON.stringify(data)}`);
+    }
+    console.log(
+      `[attempt ${attempt + 1}] deployments for commit:`,
+      data.deployments?.map((d) => `${d.meta?.githubCommitSha?.slice(0, 7)}:${d.readyState}`).join(', ')
+    );
     const match = data.deployments?.find(
       (d) => d.meta?.githubCommitSha === commitSha && d.readyState === 'READY'
     );
