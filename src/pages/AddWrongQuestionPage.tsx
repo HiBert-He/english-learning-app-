@@ -4,6 +4,7 @@ import { useWrongQuestions } from '../hooks/useWrongQuestions'
 import { useAuth } from '../lib/auth'
 import ImageUploader from '../components/ImageUploader'
 import TagInput from '../components/TagInput'
+import PremiumGate from '../components/PremiumGate'
 
 export default function AddWrongQuestionPage() {
   const navigate = useNavigate()
@@ -110,32 +111,34 @@ export default function AddWrongQuestionPage() {
         </Field>
 
         {/* AI analyze button */}
-        <button
-          type="button"
-          onClick={handleAiAnalyze}
-          disabled={!canAnalyze || analyzing}
-          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-dashed border-blue-300 text-blue-600 text-sm font-medium disabled:opacity-40 active:scale-[0.98] transition-transform bg-blue-50"
-        >
-          {analyzing ? (
-            <>
-              <span className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-              AI 分析中…
-            </>
-          ) : (
-            <>
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
-              </svg>
-              AI 一键分析（自动识别知识点）
-            </>
-          )}
-        </button>
+        <PremiumGate feature="AI 错题诊断">
+          <button
+            type="button"
+            onClick={handleAiAnalyze}
+            disabled={!canAnalyze || analyzing}
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-dashed border-blue-300 text-blue-600 text-sm font-medium disabled:opacity-40 active:scale-[0.98] transition-transform bg-blue-50"
+          >
+            {analyzing ? (
+              <>
+                <span className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                AI 分析中…
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+                </svg>
+                AI 一键分析（自动识别知识点）
+              </>
+            )}
+          </button>
 
-        {aiHint && (
-          <div className="bg-blue-50 border border-blue-100 rounded-xl px-3 py-2.5 text-xs text-blue-700">
-            <span className="font-semibold">AI 建议：</span>{aiHint}
-          </div>
-        )}
+          {aiHint && (
+            <div className="bg-blue-50 border border-blue-100 rounded-xl px-3 py-2.5 text-xs text-blue-700 mt-3">
+              <span className="font-semibold">AI 建议：</span>{aiHint}
+            </div>
+          )}
+        </PremiumGate>
 
         <Field label="正确答案">
           <textarea

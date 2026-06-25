@@ -8,35 +8,14 @@ export default function AuthPage() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [registerDone, setRegisterDone] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setLoading(true)
-    if (mode === 'login') {
-      const err = await signIn(email, password)
-      if (err) setError(err)
-    } else {
-      const err = await signUp(email, password)
-      if (err) setError(err)
-      else setRegisterDone(true)
-    }
+    const err = mode === 'login' ? await signIn(email, password) : await signUp(email, password)
+    if (err) setError(err)
     setLoading(false)
-  }
-
-  if (registerDone) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen px-6 text-center">
-        <div className="text-5xl mb-4">📬</div>
-        <h2 className="text-xl font-bold text-gray-900 mb-2">验证邮件已发送</h2>
-        <p className="text-gray-500 text-sm mb-6">请前往邮箱点击验证链接，完成注册后即可登录。</p>
-        <button onClick={() => { setMode('login'); setRegisterDone(false) }}
-          className="text-blue-600 text-sm font-medium">
-          返回登录
-        </button>
-      </div>
-    )
   }
 
   return (

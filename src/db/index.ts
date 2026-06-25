@@ -85,6 +85,11 @@ export async function deleteWord(id: string): Promise<void> {
   if (error) throw error
 }
 
+export async function deleteWords(ids: string[]): Promise<void> {
+  const { error } = await supabase.from('vocabulary').delete().in('id', ids)
+  if (error) throw error
+}
+
 // ── Teacher: read student questions ──────────────────────────
 export async function getStudentWrongQuestions(studentId: string): Promise<WrongQuestion[]> {
   const { data, error } = await supabase

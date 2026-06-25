@@ -3,12 +3,16 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/auth'
 
 export default function SettingsPage() {
-  const { profile, signOut, upgradeToTeacher } = useAuth()
+  const { profile, signOut, upgradeToTeacher, redeemPremiumCode } = useAuth()
   const navigate = useNavigate()
   const [code, setCode] = useState('')
   const [upgrading, setUpgrading] = useState(false)
   const [upgradeError, setUpgradeError] = useState('')
   const [upgraded, setUpgraded] = useState(false)
+
+  const [premiumCode, setPremiumCode] = useState('')
+  const [redeeming, setRedeeming] = useState(false)
+  const [redeemError, setRedeemError] = useState('')
 
   const handleUpgrade = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -18,6 +22,15 @@ export default function SettingsPage() {
     if (ok) setUpgraded(true)
     else setUpgradeError('邀请码无效或已使用，请联系管理员')
     setUpgrading(false)
+  }
+
+  const handleRedeem = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setRedeemError('')
+    setRedeeming(true)
+    const ok = await redeemPremiumCode(premiumCode)
+    if (!ok) setRedeemError('邀请码无效或已使用，请联系管理员')
+    setRedeeming(false)
   }
 
   const handleSignOut = async () => {
@@ -73,6 +86,28 @@ export default function SettingsPage() {
             {upgradeError && <p className="text-red-500 text-xs mt-2">{upgradeError}</p>}
           </div>
         )}
+
+        {/* Premium unlock */}
+        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+          <h3 className="font-semibold text-gray-900 mb-1 text-sm">AI 高级功能</h3>
+          <p className="text-xs text-gray-400 mb-3">AI 错题诊断、AI 生成练习、AI 辅助背单词均为付费功能，内测期间可凭邀请码免费解锁</p>
+          {profile?.is_premium ? (
+            <p className="text-green-600 text-sm font-medium">已解锁，尽情使用 ✨</p>
+          ) : (
+            <form onSubmit={handleRedeem} className="flex gap-2">
+              <input
+                value={premiumCode} onChange={(e) => setPremiumCode(e.target.value)}
+                placeholder="付费功能邀请码" autoCapitalize="none"
+                className="flex-1 border border-gray-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <button type="submit" disabled={redeeming || !premiumCode.trim()}
+                className="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium disabled:opacity-40">
+                {redeeming ? '…' : '解锁'}
+              </button>
+            </form>
+          )}
+          {redeemError && <p className="text-red-500 text-xs mt-2">{redeemError}</p>}
+        </div>
 
         {/* Sign out */}
         <button onClick={handleSignOut}

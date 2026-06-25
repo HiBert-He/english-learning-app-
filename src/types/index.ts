@@ -32,6 +32,7 @@ export interface Profile {
   id: string
   name: string
   role: 'student' | 'teacher'
+  is_premium: boolean
   created_at: string
 }
 
@@ -49,6 +50,13 @@ export interface Enrollment {
   student_id: string
   joined_at: string
   profiles?: Profile
+}
+
+export interface VocabAssist {
+  mnemonic: string
+  example: string
+  example_translation: string
+  related: string[]
 }
 
 export interface PracticeQuestion {

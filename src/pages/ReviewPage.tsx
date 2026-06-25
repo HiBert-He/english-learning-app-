@@ -2,7 +2,9 @@ import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useVocabulary } from '../hooks/useVocabulary'
 import { useAuth } from '../lib/auth'
-import type { Word } from '../types'
+import PremiumGate from '../components/PremiumGate'
+import SpeakButton from '../components/SpeakButton'
+import type { Word, VocabAssist } from '../types'
 
 export default function ReviewPage() {
   const navigate = useNavigate()
@@ -20,7 +22,32 @@ export default function ReviewPage() {
   const [done, setDone] = useState(false)
   const [masteredThisSession, setMasteredThisSession] = useState(0)
 
+  const [assistCache, setAssistCache] = useState<Record<string, VocabAssist>>({})
+  const [assisting, setAssisting] = useState(false)
+  const [assistError, setAssistError] = useState('')
+
   const current: Word | undefined = queue[index]
+  const assist = current ? assistCache[current.id] : undefined
+
+  const fetchAssist = async () => {
+    if (!current || !profile?.is_premium || assistCache[current.id] || assisting) return
+    setAssisting(true)
+    setAssistError('')
+    try {
+      const res = await fetch('/api/vocab-assist', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ english: current.english, chinese: current.chinese }),
+      })
+      if (!res.ok) throw new Error()
+      const data = await res.json()
+      setAssistCache((prev) => ({ ...prev, [current.id]: data }))
+    } catch {
+      setAssistError('AI 助记加载失败，请重试')
+    } finally {
+      setAssisting(false)
+    }
+  }
 
   const next = (mastered: boolean) => {
     if (!current) return
@@ -31,6 +58,7 @@ export default function ReviewPage() {
       update({ ...current, last_reviewed_at: new Date().toISOString() })
     }
     setFlipped(false)
+    setAssistError('')
     if (index + 1 >= queue.length) {
       setDone(true)
     } else {
@@ -99,7 +127,10 @@ export default function ReviewPage() {
         <div className="flip-card-container w-full" style={{ height: 280 }} onClick={() => setFlipped(!flipped)}>
           <div className={`flip-card ${flipped ? 'flipped' : ''}`}>
             <div className="flip-card-front bg-white rounded-3xl shadow-md border border-gray-100 flex flex-col items-center justify-center p-8 cursor-pointer select-none">
-              <p className="text-4xl font-bold text-gray-900 text-center mb-3">{current?.english}</p>
+              <div className="flex items-center gap-2 mb-3">
+                <p className="text-4xl font-bold text-gray-900 text-center">{current?.english}</p>
+                {current && <SpeakButton text={current.english} />}
+              </div>
               <div className="w-8 h-0.5 bg-gray-200 rounded" />
               <p className="text-gray-400 text-sm mt-3">← 点击翻转 →</p>
             </div>
@@ -114,6 +145,49 @@ export default function ReviewPage() {
             </div>
           </div>
         </div>
+
+        {flipped && (
+          <div className="w-full mt-6">
+            <PremiumGate feature="AI 辅助背单词">
+              {assist ? (
+                <div className="bg-violet-50 border border-violet-100 rounded-2xl p-4 text-left space-y-2">
+                  <p className="text-xs font-semibold text-violet-700">✨ 记忆技巧</p>
+                  <p className="text-sm text-gray-700">{assist.mnemonic}</p>
+                  {assist.example && (
+                    <div className="pt-1 border-t border-violet-100">
+                      <p className="text-sm text-gray-700 italic">{assist.example}</p>
+                      {assist.example_translation && (
+                        <p className="text-xs text-gray-400 mt-0.5">{assist.example_translation}</p>
+                      )}
+                    </div>
+                  )}
+                  {assist.related?.length > 0 && (
+                    <p className="text-xs text-gray-500">
+                      <span className="font-medium text-gray-600">相关词：</span>
+                      {assist.related.join('、')}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <button
+                  onClick={fetchAssist}
+                  disabled={assisting}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-dashed border-violet-300 text-violet-600 text-sm font-medium disabled:opacity-40 active:scale-[0.98] transition-transform bg-violet-50"
+                >
+                  {assisting ? (
+                    <>
+                      <span className="w-4 h-4 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
+                      AI 助记生成中…
+                    </>
+                  ) : (
+                    '✨ AI 助记（记忆技巧 + 例句）'
+                  )}
+                </button>
+              )}
+            </PremiumGate>
+            {assistError && <p className="text-red-500 text-xs mt-1.5">{assistError}</p>}
+          </div>
+        )}
 
         <div className={`w-full mt-8 transition-opacity duration-300 ${flipped ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
           <div className="flex gap-3">

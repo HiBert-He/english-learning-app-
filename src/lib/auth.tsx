@@ -12,6 +12,7 @@ interface AuthContextType {
   signOut: () => Promise<void>
   createProfile: (name: string) => Promise<string | null>
   upgradeToTeacher: (code: string) => Promise<boolean>
+  redeemPremiumCode: (code: string) => Promise<boolean>
   refreshProfile: () => Promise<void>
 }
 
@@ -103,12 +104,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return true
   }
 
+  const redeemPremiumCode = async (code: string) => {
+    if (!user || !profile) return false
+    if (profile.is_premium) return true
+    const { data: codeRow } = await supabase
+      .from('invite_codes')
+      .select('*')
+      .eq('code', code.trim().toUpperCase())
+      .is('used_by', null)
+      .single()
+    if (!codeRow) return false
+
+    await supabase
+      .from('invite_codes')
+      .update({ used_by: user.id, used_at: new Date().toISOString() })
+      .eq('code', codeRow.code)
+
+    await supabase
+      .from('profiles')
+      .update({ is_premium: true })
+      .eq('id', user.id)
+
+    await fetchProfile(user.id)
+    return true
+  }
+
   const refreshProfile = async () => {
     if (user) await fetchProfile(user.id)
   }
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, signIn, signUp, signOut, createProfile, upgradeToTeacher, refreshProfile }}>
+    <AuthContext.Provider value={{ user, profile, loading, signIn, signUp, signOut, createProfile, upgradeToTeacher, redeemPremiumCode, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   )

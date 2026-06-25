@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { getAllWords, addWord, addWords, updateWord, deleteWord } from '../db'
+import { getAllWords, addWord, addWords, updateWord, deleteWord, deleteWords } from '../db'
 import type { Word } from '../types'
 
 export function useVocabulary(userId: string) {
@@ -40,5 +40,10 @@ export function useVocabulary(userId: string) {
     await load()
   }, [load])
 
-  return { words, loading, add, addBulk, update, remove, reload: load }
+  const removeMany = useCallback(async (ids: string[]) => {
+    await deleteWords(ids)
+    await load()
+  }, [load])
+
+  return { words, loading, add, addBulk, update, remove, removeMany, reload: load }
 }

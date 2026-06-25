@@ -8,8 +8,11 @@ create table if not exists profiles (
   id uuid references auth.users(id) on delete cascade primary key,
   name text not null,
   role text not null default 'student' check (role in ('student', 'teacher')),
+  is_premium boolean not null default false,
   created_at timestamptz not null default now()
 );
+-- 对已存在的 profiles 表补充 is_premium 列（create table if not exists 对老表不会加列）
+alter table profiles add column if not exists is_premium boolean not null default false;
 
 -- 教师邀请码（管理员手动插入，学生输入后升级为教师）
 create table if not exists teacher_codes (
@@ -21,6 +24,18 @@ create table if not exists teacher_codes (
 -- 预置几个初始邀请码，可在 Dashboard 里增删
 insert into teacher_codes (code) values
   ('TEACHER2024'), ('TEACH001'), ('EDU2024'), ('ENGLISH88')
+on conflict do nothing;
+
+-- 付费功能邀请码（AI 错题诊断 / 生成练习，内测期间凭码免费解锁，管理员手动插入）
+create table if not exists invite_codes (
+  code text primary key,
+  used_by uuid references profiles(id),
+  used_at timestamptz,
+  created_at timestamptz not null default now()
+);
+-- 预置几个初始邀请码，可在 Dashboard 里增删
+insert into invite_codes (code) values
+  ('BETA2024'), ('BETA001'), ('BETA002')
 on conflict do nothing;
 
 -- 班级
@@ -77,6 +92,7 @@ create table if not exists vocabulary (
 
 alter table profiles enable row level security;
 alter table teacher_codes enable row level security;
+alter table invite_codes enable row level security;
 alter table classes enable row level security;
 alter table enrollments enable row level security;
 alter table wrong_questions enable row level security;
@@ -96,6 +112,12 @@ create policy "own_profile_update" on profiles for update using (auth.uid() = id
 -- teacher_codes（任何已登录用户可读，用于验证）
 create policy "read_codes" on teacher_codes for select using (auth.role() = 'authenticated');
 create policy "update_codes" on teacher_codes for update using (auth.role() = 'authenticated');
+
+-- invite_codes（任何已登录用户可读/兑换，用于解锁付费 AI 功能）
+drop policy if exists "read_invite_codes" on invite_codes;
+create policy "read_invite_codes" on invite_codes for select using (auth.role() = 'authenticated');
+drop policy if exists "update_invite_codes" on invite_codes;
+create policy "update_invite_codes" on invite_codes for update using (auth.role() = 'authenticated');
 
 -- classes
 create policy "teacher_all_classes" on classes for all using (teacher_id = auth.uid());

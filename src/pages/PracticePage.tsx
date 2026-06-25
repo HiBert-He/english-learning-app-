@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useWrongQuestions } from '../hooks/useWrongQuestions'
 import { useAuth } from '../lib/auth'
+import PremiumGate from '../components/PremiumGate'
 import type { PracticeQuestion } from '../types'
 
 type Phase = 'idle' | 'loading' | 'quiz' | 'done'
@@ -328,13 +329,15 @@ export default function PracticePage() {
 
             {error && <p className="text-red-500 text-sm px-1">{error}</p>}
 
-            <button
-              onClick={generate}
-              disabled={selected.size === 0}
-              className="w-full bg-blue-600 text-white py-3 rounded-2xl font-semibold text-base disabled:opacity-40 active:scale-[0.98] transition-transform"
-            >
-              生成 5 道练习题
-            </button>
+            <PremiumGate feature="AI 生成练习">
+              <button
+                onClick={generate}
+                disabled={selected.size === 0}
+                className="w-full bg-blue-600 text-white py-3 rounded-2xl font-semibold text-base disabled:opacity-40 active:scale-[0.98] transition-transform"
+              >
+                生成 5 道练习题
+              </button>
+            </PremiumGate>
           </>
         )}
       </div>
